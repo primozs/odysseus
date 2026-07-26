@@ -144,7 +144,11 @@ def _pip_dist_name(pkg: dict) -> str:
 
 def _import_optional_dependency_for_status(name: str):
     prepare_optional_dependency_import(name)
-    return importlib.import_module(name)
+    try:
+        return importlib.import_module(name)
+    except BaseException as e:
+        logger.debug(f"Optional dependency {name} failed to import: {e}")
+        return None
 
 
 def _package_installed_from_probe(name: str, probe: dict) -> bool:
