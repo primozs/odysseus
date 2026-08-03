@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Calendar routes — local SQLite-backed calendar CRUD."""
 
 import logging

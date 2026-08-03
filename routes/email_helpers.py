@@ -1,4 +1,6 @@
-"""Backward-compat shim — canonical location is routes/email/email_helpers.py.
+from __future__ import annotations
+
+""" Backward-compat shim — canonical location is routes/email/email_helpers.py.
 
 This module is replaced in ``sys.modules`` by the canonical module object so
 that ``import routes.email_helpers``, ``from routes.email_helpers import X``,
