@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 assistant_log.py
 

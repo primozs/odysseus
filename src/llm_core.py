@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # src/llm_core.py
 import httpx
 import asyncio

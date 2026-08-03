@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Outgoing webhook manager — fires HTTP POSTs when events happen."""
 
 import asyncio
