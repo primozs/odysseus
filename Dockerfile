@@ -105,7 +105,7 @@ RUN pip install --no-cache-dir -r requirements.txt \
 RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 # Install vllm
-RUN pip install --no-cache-dir vllm
+RUN pip install --no-cache-dir --timeout 300 --retries 5 vllm
 
 # Install sglang
 RUN pip install --no-cache-dir sglang==0.5.16
