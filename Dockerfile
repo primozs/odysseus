@@ -32,14 +32,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PATH=/usr/local/cuda-12.4/bin:${PATH}
 ENV LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64:${LD_LIBRARY_PATH}
 ENV HUGGINGFACE_HUB_CACHE=/app/.cache/huggingface
-ENV HUGGINGFACE_HUB_CACHE=/app/.cache/huggingface
 
 # System deps. tmux is required by Cookbook for background downloads/serves.
 # openssh-client is required for Cookbook remote server tests, setup, probes,
 # downloads, and serves from Docker installs.
 # git/cmake are required when Cookbook builds llama.cpp on first llama.cpp
 # launch inside Docker.
-# nodejs/npm provide npx for the built-in Browser MCP server.
+# Node 20 is installed below (official tarball) — Debian bookworm only ships
+# Node 18, but Playwright requires Node 20+.
 # chromium provides the actual browser binary used by that MCP server.
 # gosu lets the entrypoint drop privileges cleanly so signals still reach
 # uvicorn directly (no extra shell layer like `su`/`sudo` would add).
@@ -48,8 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     curl \
     git \
-    nodejs \
-    npm \
+    xz-utils \
     chromium \
     tmux \
     openssh-client \
@@ -59,6 +58,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxcb1 \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20 (Playwright requires Node 20+, bookworm only has 18)
+RUN ARCH="$(dpkg --print-architecture)" \
+    && case "$ARCH" in \
+         amd64) NARCH=x64 ;; \
+         arm64) NARCH=arm64 ;; \
+         *) echo "unsupported arch $ARCH"; exit 1 ;; \
+       esac \
+    && NODE_VER=20.20.2 \
+    && curl -fsSL "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-${NARCH}.tar.xz" \
+       | tar -xJ -C /usr/local --strip-components=1 \
+    && node --version && npx --version
 
 # libgl1/libglib2.0-0t64/libxcb1 are runtime shared libs (libGL.so.1,
 # libglib-2.0/libgthread, libxcb.so.1) that opencv-python (cv2) loads. The
@@ -109,6 +120,10 @@ RUN pip install --no-cache-dir --timeout 300 --retries 5 vllm
 
 # Install sglang
 RUN pip install --no-cache-dir sglang==0.5.16
+
+# sglang pulls in mcp>=2 which breaks the built-in MCP servers
+# (Server.list_tools() was removed). Pin back to the 1.x line.
+RUN pip install --no-cache-dir 'mcp<2'
 
 # Create symlink for libcuda stub so llama.cpp can link against it
 RUN ln -sf /usr/local/cuda-12.4/targets/x86_64-linux/lib/stubs/libcuda.so /usr/local/cuda-12.4/lib64/libcuda.so.1 && \
