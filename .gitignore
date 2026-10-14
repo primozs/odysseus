@@ -26,6 +26,8 @@ secrets.env.*
 
 # Data — all user data stays local
 data/
+# Cold ChromaDB dumps from docs/chromadb-volume-migration.md (local only)
+chromadb-backup-*/
 # Per-worktree runtime state written by `odysseus dev` (its own data dir,
 # logs and stop handle) — disposable, and never shared between checkouts.
 .odysseus-dev/
